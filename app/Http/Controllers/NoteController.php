@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\NoteRequest;
+use App\Http\Resources\NoteResource;
 use App\Models\Note;
 use Illuminate\Http\JsonResponse;
 
@@ -14,7 +15,7 @@ class NoteController extends Controller
     public function index(): JsonResponse
     {
         $notes = Note::all();
-        return response()->json(["data" => count($notes)], 200);
+        return response()->json(["data" => NoteResource::collection($notes)], 200);
     }
 
     /**
@@ -23,7 +24,7 @@ class NoteController extends Controller
     public function store(NoteRequest $request): JsonResponse
     {
         $newNote = Note::create($request->all());
-        return response()->json(["data" => $newNote], 201);
+        return response()->json(["data" => new NoteResource($newNote)], 201);
     }
 
     /**
@@ -33,13 +34,13 @@ class NoteController extends Controller
     {
         try {
 
-            $note = Note::find((int) $id);
+            $note = Note::find($id);
 
             if (!$note) {
                 return response()->json(["error" => "Note not found"], 404);
             }
 
-            return response()->json(["data" => $note], 200);
+            return response()->json(["data" => new NoteResource($note)], 200);
 
         } catch (\Throwable $th) {
             return response()->json(["error" => $th->getMessage()], 500);
@@ -63,7 +64,7 @@ class NoteController extends Controller
             $note->content = $request->content;
             $note->save();
 
-            return response()->json(["data" => $note], 200);
+            return response()->json(["data" => new NoteResource($note)], 200);
 
         } catch (\Throwable $th) {
             return response()->json(["error" => $th->getMessage()], 500);
